@@ -8,6 +8,10 @@
 
 import UIKit
 
+@objc protocol FiltersViewControllerDelegate {
+    optional func filtersViewController(filterVC: FiltersViewController, didUpdateFilter filters: [String])
+}
+
 class FiltersViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, SwitchCellDelegate {
     
     let categories = [["name" : "Afghan", "code": "afghani"],
@@ -184,6 +188,8 @@ class FiltersViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet weak var tableView: UITableView!
     var switchStates = [Int: Bool]()
     
+    weak var delegate: FiltersViewControllerDelegate?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -221,15 +227,22 @@ class FiltersViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     @IBAction func onCancel(sender: UIBarButtonItem) {
-        dismissViewControllerAnimated(true) { 
-            //
-        }
-        
+        dismissViewControllerAnimated(true, completion: nil)
     }
     
     @IBAction func onSearch(sender: UIBarButtonItem) {
-        dismissViewControllerAnimated(true) {
-            //
+        var filter = [String]()
+        
+        for (row, isSelected) in switchStates {
+            if isSelected {
+                filter.append(categories[row]["code"]!)
+            }
         }
+
+        if filter.count > 0 {
+            delegate?.filtersViewController?(self, didUpdateFilter: filter)
+        }
+        
+        dismissViewControllerAnimated(true, completion: nil)
     }
 }
